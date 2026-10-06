@@ -35,19 +35,35 @@ void AMovingObstacle::Tick(float DeltaTime)
 	// Movement
 	if (!MovementOffset.IsNearlyZero())
 	{
-		float MovementDistance = MovementSpeed * DeltaTime;
-
-		MovementProgress += MovementDistance * MovementDirection;
-
-		if (MovementProgress >= 1.0f)
+		// If we are currently paused, count down the pause timer
+		if (PauseTimer > 0.0f)
 		{
-			MovementProgress = 1.0f;
-			MovementDirection = -1.0f;
+			PauseTimer -= DeltaTime;
 		}
-		else if (MovementProgress <= 0.0f)
+		else
 		{
-			MovementProgress = 0.0f;
-			MovementDirection = 1.0f;
+			float MovementDistance = MovementSpeed * DeltaTime;
+
+			MovementProgress += MovementDistance * MovementDirection;
+
+			// Reached the far endpoint
+			if (MovementProgress >= 1.0f)
+			{
+				MovementProgress = 1.0f;
+				MovementDirection = -1.0f;
+
+				// Start endpoint pause
+				PauseTimer = EndpointPauseTime;
+			}
+			// Reached the starting endpoint
+			else if (MovementProgress <= 0.0f)
+			{
+				MovementProgress = 0.0f;
+				MovementDirection = 1.0f;
+
+				// Start endpoint pause
+				PauseTimer = EndpointPauseTime;
+			}
 		}
 
 		FVector NewLocation =
